@@ -2,44 +2,402 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Hello World Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NBN 100 plans — reward-included pricing prototype</title>
   <style>
+    :root {
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --bg: #f8fafc;
+      --brand: #1f7aec;
+      --brand-dark: #0a4fb6;
+      --reward: #0e8f5e;
+      --reward-bg: #e7f8f0;
+      --promo-red: #c0392b;
+      --shadow: 0 1px 2px rgba(15,23,42,.04), 0 4px 12px rgba(15,23,42,.05);
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    header.topbar {
+      background: white;
+      border-bottom: 1px solid var(--line);
+      padding: 16px 24px;
+    }
+    header.topbar .brand {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--brand);
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    h1 { font-size: 28px; margin: 0 0 4px; }
+    .subtitle { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+
+    .controls {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    .controls label { font-weight: 600; font-size: 14px; }
+    .controls select {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 14px;
+      background: white;
+      min-width: 280px;
+    }
+    .controls .hint {
+      color: var(--muted);
+      font-size: 13px;
+      margin-left: auto;
+    }
+
+    .plans { display: flex; flex-direction: column; gap: 12px; }
+    .card {
+      display: grid;
+      grid-template-columns: 200px 1fr 180px 160px;
+      gap: 20px;
+      padding: 20px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      align-items: center;
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .card.has-reward { border-color: #c8eed9; }
+    .card.moved {
+      animation: pulse 1.2s ease;
+    }
+    @keyframes pulse {
+      0% { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(14,143,94,.18); }
+      100% { transform: none; box-shadow: var(--shadow); }
+    }
+
+    .provider .logo {
+      width: 100%;
+      height: 56px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #f6f7f9;
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 16px;
+      letter-spacing: .2px;
     }
-    button {
-      font-size: 1rem;
-      padding: 0.75rem 1.5rem;
+    .provider .plan-name {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .features { font-size: 14px; }
+    .features .row { display: flex; gap: 6px; margin-bottom: 4px; }
+    .features .row .label { color: var(--muted); min-width: 110px; }
+    .features .row .val { font-weight: 600; }
+
+    .reward-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--reward-bg);
+      color: var(--reward);
+      font-weight: 600;
+      font-size: 12px;
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+    .reward-badge::before {
+      content: "★";
+      font-size: 11px;
+    }
+
+    .price { text-align: right; }
+    .price .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 2px;
+    }
+    .price .ongoing {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .price .ongoing .unit { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .price .promo {
+      font-size: 13px;
+      color: var(--promo-red);
+      margin-top: 4px;
+    }
+    .price .effective {
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: var(--reward-bg);
+      border-radius: 6px;
+      color: var(--reward);
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .price .effective .big {
+      display: block;
+      font-size: 16px;
+    }
+    .price .effective .small {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      opacity: .85;
+    }
+
+    .cta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .cta button {
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
       border: none;
       border-radius: 6px;
-      background: #2563eb;
-      color: white;
       cursor: pointer;
     }
-    button:hover { background: #1d4ed8; }
-    #message {
-      margin-top: 1.5rem;
-      font-size: 1.5rem;
-      color: #111;
-      min-height: 2rem;
+    .cta .primary { background: var(--brand); color: white; }
+    .cta .primary:hover { background: var(--brand-dark); }
+    .cta .secondary {
+      background: white;
+      color: var(--brand);
+      border: 1px solid var(--brand);
+    }
+
+    .panel {
+      background: #fffbea;
+      border: 1px solid #fde68a;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #78350f;
+      margin-bottom: 16px;
+    }
+    .panel strong { color: #78350f; }
+
+    @media (max-width: 800px) {
+      .card { grid-template-columns: 1fr; }
+      .price { text-align: left; }
     }
   </style>
 </head>
 <body>
-  <button id="greet">Click me</button>
-  <div id="message"></div>
+  <header class="topbar">
+    <div class="brand">finder</div>
+  </header>
+
+  <div class="container">
+    <h1>NBN 100 plans</h1>
+    <p class="subtitle">Compare plans from Australia's leading providers · Showing 7 plans</p>
+
+    <div class="panel">
+      <strong>Prototype:</strong> Toggle the sort below to see how surfacing a "reward-included" effective price changes which deal looks cheapest. Try switching from <em>Monthly price</em> to <em>Effective monthly (12-mo, reward included)</em>.
+    </div>
+
+    <div class="controls">
+      <label for="sort">Sort by</label>
+      <select id="sort">
+        <option value="ongoing">Monthly price (ongoing)</option>
+        <option value="promo">Special offer price (intro)</option>
+        <option value="effective">Effective monthly — 12-mo, reward included ★</option>
+        <option value="speed">Evening speed</option>
+      </select>
+      <span class="hint" id="sortNote">Default: cheapest ongoing monthly price first</span>
+    </div>
+
+    <div class="plans" id="plans"></div>
+
+    <p style="color: var(--muted); font-size: 12px; margin-top: 24px;">
+      Effective price = (ongoing monthly × 12 − reward value) ÷ 12. Reward is paid as a Visa eGift card after the qualifying period; T&Cs apply.
+    </p>
+  </div>
 
   <script>
-    document.getElementById("greet").addEventListener("click", () => {
-      document.getElementById("message").textContent = "hello world";
-    });
+    const plans = [
+      {
+        provider: "Tangerine",
+        planName: "XL Speed Boost",
+        ongoing: 74.90,
+        promoMonths: 6,
+        promoPrice: 64.90,
+        speed: 100,
+        upload: 20,
+        contract: "No lock-in",
+        reward: null,
+      },
+      {
+        provider: "Superloop",
+        planName: "Family Fast",
+        ongoing: 79.00,
+        promoMonths: 6,
+        promoPrice: 69.00,
+        speed: 100,
+        upload: 20,
+        contract: "No lock-in",
+        reward: null,
+      },
+      {
+        provider: "TPG",
+        planName: "NBN100 Standard",
+        ongoing: 79.99,
+        promoMonths: null,
+        promoPrice: null,
+        speed: 95,
+        upload: 17,
+        contract: "No lock-in",
+        reward: null,
+      },
+      {
+        provider: "Dodo",
+        planName: "NBN100 Unlimited",
+        ongoing: 85.00,
+        promoMonths: 3,
+        promoPrice: 75.00,
+        speed: 90,
+        upload: 18,
+        contract: "No lock-in",
+        reward: { value: 110, label: "$110 Visa eGift card", monthsToQualify: 3, perMonth: 9.17 },
+      },
+      {
+        provider: "Optus",
+        planName: "Fast NBN 500/50",
+        ongoing: 89.00,
+        promoMonths: null,
+        promoPrice: null,
+        speed: 100,
+        upload: 40,
+        contract: "No lock-in",
+        reward: { value: 250, label: "$250 Visa eGift card", monthsToQualify: 3, perMonth: 20.83 },
+      },
+      {
+        provider: "Aussie Broadband",
+        planName: "Family Plus",
+        ongoing: 89.00,
+        promoMonths: null,
+        promoPrice: null,
+        speed: 100,
+        upload: 20,
+        contract: "No lock-in",
+        reward: null,
+      },
+      {
+        provider: "iiNet",
+        planName: "Fibre100",
+        ongoing: 89.99,
+        promoMonths: 6,
+        promoPrice: 79.99,
+        speed: 100,
+        upload: 17,
+        contract: "No lock-in",
+        reward: null,
+      },
+    ];
+
+    function effectiveMonthly(p) {
+      const total = p.ongoing * 12 - (p.reward ? p.reward.value : 0);
+      return total / 12;
+    }
+
+    function fmt(n) {
+      return "$" + n.toFixed(2);
+    }
+
+    function logoText(name) {
+      return name;
+    }
+
+    function render(sortKey, animate = false) {
+      const sorters = {
+        ongoing: (a, b) => a.ongoing - b.ongoing,
+        promo: (a, b) => (a.promoPrice ?? a.ongoing) - (b.promoPrice ?? b.ongoing),
+        effective: (a, b) => effectiveMonthly(a) - effectiveMonthly(b),
+        speed: (a, b) => b.speed - a.speed,
+      };
+      const sorted = [...plans].sort(sorters[sortKey]);
+
+      const container = document.getElementById("plans");
+      const prevOrder = [...container.children].map(el => el.dataset.provider);
+
+      container.innerHTML = sorted.map(p => {
+        const eff = effectiveMonthly(p);
+        const isReward = !!p.reward;
+        const showEffective = sortKey === "effective" && isReward;
+
+        return `
+          <div class="card ${isReward ? "has-reward" : ""}" data-provider="${p.provider}">
+            <div class="provider">
+              <div class="logo">${logoText(p.provider)}</div>
+              <div class="plan-name">${p.planName}</div>
+            </div>
+            <div class="features">
+              <div class="row"><span class="label">Evening speed</span><span class="val">${p.speed} Mbps</span></div>
+              <div class="row"><span class="label">Upload</span><span class="val">${p.upload} Mbps</span></div>
+              <div class="row"><span class="label">Contract</span><span class="val">${p.contract}</span></div>
+              ${isReward ? `<span class="reward-badge">${p.reward.label} after ${p.reward.monthsToQualify} mo (≈ $${p.reward.perMonth.toFixed(2)}/mo off)</span>` : ""}
+            </div>
+            <div class="price">
+              <div class="label">Ongoing</div>
+              <div class="ongoing">${fmt(p.ongoing)}<span class="unit"> /mo</span></div>
+              ${p.promoPrice ? `<div class="promo">${fmt(p.promoPrice)}/mo for first ${p.promoMonths} mo</div>` : ""}
+              ${showEffective ? `
+                <div class="effective">
+                  <span class="big">${fmt(eff)}/mo</span>
+                  <span class="small">12-mo effective with reward</span>
+                </div>
+              ` : ""}
+            </div>
+            <div class="cta">
+              <button class="primary">Go to site</button>
+              <button class="secondary">More info</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (animate) {
+        const newOrder = sorted.map(p => p.provider);
+        newOrder.forEach((name, i) => {
+          if (prevOrder[i] !== name) {
+            container.children[i].classList.add("moved");
+          }
+        });
+      }
+
+      const notes = {
+        ongoing: "Default: cheapest ongoing monthly price first",
+        promo: "Sorted by intro/special-offer price (varies in length — not normalised)",
+        effective: "Sorted by effective monthly cost over 12 months, with Finder reward included ★",
+        speed: "Sorted by evening speed (fastest first)",
+      };
+      document.getElementById("sortNote").textContent = notes[sortKey];
+    }
+
+    document.getElementById("sort").addEventListener("change", e => render(e.target.value, true));
+    render("ongoing");
   </script>
 </body>
 </html>
